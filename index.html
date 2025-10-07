@@ -221,6 +221,39 @@
             z-index: 100;
         }
 
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--system-background);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #loginOverlay.hidden {
+            display: none;
+        }
+
+        #loginForm {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        #loginForm input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--system-gray-5);
+            background: var(--system-gray-6);
+            color: var(--label-primary);
+        }
     </style>
     <link rel="manifest" href="./manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -229,6 +262,15 @@
     <link rel="apple-touch-icon" href="./icons/icon-192.png">
 </head>
 <body>
+    <div id="loginOverlay">
+        <div class="card">
+            <h2>Signalbuch Zugang</h2>
+            <form id="loginForm">
+                <input type="password" id="passwordInput" placeholder="Passwort eingeben" required>
+                <button type="submit" class="button">Anmelden</button>
+            </form>
+        </div>
+    </div>
 
     <header>
         <h1>Signalbuch</h1>
@@ -304,6 +346,34 @@
     </nav>
 
     <script>
+        const CORRECT_PASSWORD = 'DeinPasswort123'; // Hier das gewünschte Passwort eintragen
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginForm = document.getElementById('loginForm');
+        
+        // Prüfe ob bereits authentifiziert
+        if (!sessionStorage.getItem('authenticated')) {
+            loginOverlay.classList.remove('hidden');
+        }
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = document.getElementById('passwordInput').value;
+            
+            if (password === CORRECT_PASSWORD) {
+                sessionStorage.setItem('authenticated', 'true');
+                loginOverlay.classList.add('hidden');
+            } else {
+                alert('Falsches Passwort');
+            }
+        });
+
+        // Verhindere Umgehung durch Browser-Tools
+        document.addEventListener('visibilitychange', () => {
+            if (!sessionStorage.getItem('authenticated')) {
+                location.reload();
+            }
+        });
+
         feather.replace();
 
         const flashcards = [
@@ -350,7 +420,7 @@
             {
                 "type": "Signal",
                 "term": "Zuordnungstafel (Signal So 20)",
-                "image": "/Users/badfamezz/Desktop/Bildschirmfoto 2025-10-07 um 21.28.39.png",
+                "image": "./images/config.png",
                 "definition": "<h3>Zuordnungstafel (Signal So 20)</h3><p>Ein schwarzes Rechteck mit weißem, rückstrahlendem Dreieck.</p><p>Bedeutung: Das Signal gilt für das Gleis, auf das die Spitze des Dreiecks weist.</p><p>Besonderheiten:</p><ul><li>Wird beleuchtet, wenn auch das gekennzeichnete Signal beleuchtet ist</li><li>Kennzeichnet Signale zwischen zwei Gleisen</li><li>Wird über dem zu kennzeichnenden Signal angebracht</li><li>Bei Gültigkeit für beide Gleise werden zwei Zuordnungstafeln verwendet</li></ul>"
             },
             {
