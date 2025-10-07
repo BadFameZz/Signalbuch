@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Signalbuch Lern-App</title>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        :root {
+            --system-background: #000000;
+            --system-gray-6: #1c1c1e;
+            --system-gray-5: #2c2c2e;
+            --system-blue: #0a84ff;
+            --label-primary: #ffffff;
+            --label-secondary: #e5e5ea;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            background: linear-gradient(90deg, #0a0a1a, #1a0a1a, #0a1a0a);
+            background-size: 200% 200%;
+            animation: aurora 15s ease infinite;
+            color: var(--label-primary);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 50px 20px 20px 20px;
+            text-align: left;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        main {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 0 20px 150px 20px; /* Padding bottom for nav bar */
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .flashcard-scene {
+            perspective: 1000px;
+            width: 100%;
+            height: 400px; /* Zurück auf 400px geändert */
+            margin-bottom: 25px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            box-sizing: border-box;
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+        }
+
+        .card {
+            background: rgba(44, 44, 46, 0.6);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* Ermöglicht Scrollen bei Überlauf */
+            -webkit-overflow-scrolling: touch; /* Für besseres Scrolling auf iOS */
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 15px; /* Fügt etwas Abstand unter der Überschrift hinzu */
+            color: var(--label-primary);
+            font-size: 1.5em;
+            flex-shrink: 0; /* Verhindert, dass die Überschrift schrumpft */
+        }
+
+        /* Neuer CSS-Block für Bilder */
+        .card img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            border-radius: 8px;
+            flex-shrink: 0; /* Verhindert, dass das Bild schrumpft */
+        }
+
+        /* Zusätzliche Stile für den Textbereich */
+        .card-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px; /* Platz für Scrollbar */
+        }
+
+        .button {
+            background-color: var(--system-blue);
+            color: var(--label-primary);
+            border: none;
+            padding: 18px 25px;
+            font-size: 1em;
+            font-weight: 600;
+            border-radius: 15px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+
+        .button:active {
+            transform: scale(0.96);
+            background-color: #0077ee;
+        }
+
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            background: rgba(28, 28, 30, 0.7);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 0;
+            padding-bottom: env(safe-area-inset-bottom); /* For iPhone X notch */
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: var(--label-secondary);
+            cursor: pointer;
+            padding: 5px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        nav button.active {
+            color: var(--system-blue);
+        }
+        
+        #search-bar {
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            background-color: var(--system-gray-5);
+            border: none;
+            border-radius: 10px;
+            color: var(--label-primary);
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        
+        .progress-bar-container {
+            background-color: var(--system-gray-5);
+            border-radius: 8px;
+            height: 8px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            background-color: var(--system-blue);
+            width: 75%;
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        .page-footer {
+            position: fixed;
+            bottom: 85px; /* Adjust this value to position above the main nav bar */
+            left: 0;
+            right: 0;
+            padding: 0 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+    </style>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Signalbuch">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+</head>
+<body>
+
+    <header>
+        <h1>Signalbuch</h1>
+    </header>
+
+    <main>
+        <div id="home" class="page active">
+            <div class="card">
+                <h2>Willkommen</h2>
+                <p>Wähle eine Funktion aus, um mit dem Lernen zu beginnen.</p>
+            </div>
+        </div>
+
+        <div id="lernkarten" class="page">
+            <div class="flashcard-scene">
+                <div id="flashcard" class="flashcard">
+                    <div class="flashcard-face flashcard-front">
+                        <div id="card-front-content" class="card"></div>
+                    </div>
+                    <div class="flashcard-face flashcard-back">
+                        <div id="card-back-content" class="card"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="page-footer">
+                <button id="prev-card" class="button" style="flex-grow: 1;">Zurück</button>
+                <button id="next-card" class="button" style="flex-grow: 1;">Weiter</button>
+            </div>
+        </div>
+
+        <div id="quiz" class="page">
+            <div class="card">
+                <h2>Quizfrage</h2>
+                <p>Was bedeutet dieses Signal?</p>
+                <button class="button">Antwort A</button>
+                <button class="button">Antwort B</button>
+                <button class="button">Antwort C</button>
+            </div>
+        </div>
+
+        <div id="pruefung" class="page">
+             <div class="card">
+                <h2>Prüfung</h2>
+                <p>Die Prüfung simuliert die echte Prüfungssituation. Bist du bereit?</p>
+                <button class="button">Prüfung starten</button>
+            </div>
+        </div>
+
+        <div id="fortschritt" class="page">
+            <div class="card">
+                <h2>Lernfortschritt</h2>
+                <p>Dein Fortschritt: 75%</p>
+                <div class="progress-bar-container">
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="suche" class="page">
+            <input type="text" id="search-bar" placeholder="Schnellsuche...">
+            <div class="card">
+                <p>Suchergebnisse werden hier angezeigt.</p>
+            </div>
+        </div>
+    </main>
+
+    <nav>
+        <button data-page="lernkarten"><i data-feather="copy"></i><span>Karten</span></button>
+        <button data-page="quiz"><i data-feather="help-circle"></i><span>Quiz</span></button>
+        <button data-page="pruefung"><i data-feather="check-circle"></i><span>Prüfung</span></button>
+        <button data-page="fortschritt"><i data-feather="trending-up"></i><span>Fortschritt</span></button>
+        <button data-page="suche"><i data-feather="search"></i><span>Suche</span></button>
+    </nav>
+
+    <script>
+        feather.replace();
+
+        const flashcards = [
+            {
+                "type": "Begriffsbestimmung",
+                "term": "Signal",
+                "definition": "Ein sichtbares oder hörbares Zeichen mit einer festgelegten Information zur Gewährleistung des sicheren Bewegens von Eisenbahnfahrzeugen."
+            },
+            {
+                "type": "Begriffsbestimmung",
+                "term": "Signalbegriff",
+                "definition": "Die Kurzbezeichnung eines Signals (z. B. Zs 1), die bei einigen Signalen durch eine Langbezeichnung ergänzt ist (z. B. Ersatzsignal)."
+            },
+            {
+                "type": "Begriffsbestimmung",
+                "term": "Signalbedeutung",
+                "definition": "Die verbale Darstellung der Information, die ein Signal gibt."
+            },
+            {
+                "type": "Begriffsbestimmung",
+                "term": "Signalbeschreibung",
+                "definition": "Die verbale Darstellung des Signalbildes oder des Signaltones."
+            },
+            {
+                "type": "Begriffsbestimmung",
+                "term": "Signalbild",
+                "definition": "Umfasst die für ein sichtbares Signal festgelegten Formen, Farben und Merkmale (z. B. Symbole, Buchstaben, Zahlen). Kann ein Formsignal, Lichtsignal oder ein Handsignal sein."
+            },
+            {
+                "type": "Begriffsbestimmung",
+                "term": "Signalton",
+                "definition": "Umfasst das hörbare Signal, das aus einem oder mehreren Tönen besteht, für die die Dauer und, wenn erforderlich, auch die Tonhöhe festgelegt sind."
+            },
+            {
+                "type": "Begriffsbestimmung",
+                "term": "Ortsfeste signaltechnische Einrichtungen",
+                "definition": "Signale, die nach ihrer Funktion bezeichnet werden. Beispiele: Hauptsignale, Vorsignale, Sperrsignale, Überwachungssignale, Weichensignale, Abdrücksignale."
+            },
+            {
+                "type": "Begriffsbestimmung",
+                "term": "Weißes Licht / Zusatzlicht",
+                "definition": "Wird, wenn es nicht Bestandteil eines Signals ist, als Zusatzlicht (zur Kennzeichnung verkürzter Bremswege oder von Vorsignalwiederholern) oder als Kennlicht (zur Kennzeichnung betrieblich abgeschalteter Signale) verwendet."
+            },
+            {
+                "type": "Signal",
+                "term": "Zuordnungstafel (Signal So 20)",
+                "image": "/Users/badfamezz/Desktop/Bildschirmfoto 2025-10-07 um 21.28.39.png",
+                "definition": "<h3>Zuordnungstafel (Signal So 20)</h3><p>Ein schwarzes Rechteck mit weißem, rückstrahlendem Dreieck.</p><p>Bedeutung: Das Signal gilt für das Gleis, auf das die Spitze des Dreiecks weist.</p><p>Besonderheiten:</p><ul><li>Wird beleuchtet, wenn auch das gekennzeichnete Signal beleuchtet ist</li><li>Kennzeichnet Signale zwischen zwei Gleisen</li><li>Wird über dem zu kennzeichnenden Signal angebracht</li><li>Bei Gültigkeit für beide Gleise werden zwei Zuordnungstafeln verwendet</li></ul>"
+            },
+            {
+                "type": "Betriebliches",
+                "term": "Anschließender Weichenbereich",
+                "definition": "<h3>Anschließender Weichenbereich</h3><p>Der anschließende Weichenbereich ist ein festgelegter Gleisabschnitt mit folgenden Grenzen:</p><p><strong>Anfang:</strong> Am Signal, ab dem die Fahrt zugelassen wird.</p><p><strong>Ende:</strong></p><ul><li>Bei Einfahrt/Zwischensignal: Am folgenden Hauptsignal oder letzten gewöhnlichen Halteplatz davor</li><li>Bei Ausfahrsignal: Hinter der letzten Weiche (ohne Weiche: am Ausfahrsignal)</li><li>Auf Abzweig-/Überleit-/Anschlussstellen mit Hauptsignal: Hinter der letzten Weiche</li></ul><p><strong>Wichtig:</strong> Höhere Geschwindigkeit erst erlaubt, wenn der Zug den Bereich vollständig verlassen hat (Ausnahme: Halt am gewöhnlichen Halteplatz).</p>"
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const navButtons = document.querySelectorAll('nav button');
+            const pages = document.querySelectorAll('.page');
+            const homePage = document.getElementById('home');
+            const flashcard = document.getElementById('flashcard');
+            const cardFrontContent = document.getElementById('card-front-content');
+            const cardBackContent = document.getElementById('card-back-content');
+            const prevCardButton = document.getElementById('prev-card');
+            const nextCardButton = document.getElementById('next-card');
+
+            let currentCardIndex = 0;
+
+            function showFlashcard() {
+                const cardData = flashcards[currentCardIndex];
+                
+                if (flashcard.classList.contains('is-flipped')) {
+                    flashcard.classList.remove('is-flipped');
+                }
+
+                let frontContent = `<h2>${cardData.term}</h2>`;
+                if (cardData.image) {
+                    frontContent += `<img src="${cardData.image}" alt="${cardData.term}">`;
+                }
+                cardFrontContent.innerHTML = frontContent;
+                // Wrap definition in a div for better scrolling
+                cardBackContent.innerHTML = `<div class="card-content">${cardData.definition}</div>`;
+            }
+            
+            function flipCard() {
+                flashcard.classList.toggle('is-flipped');
+            }
+
+            flashcard.addEventListener('click', flipCard);
+
+            nextCardButton.addEventListener('click', () => {
+                currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+                showFlashcard();
+            });
+
+            prevCardButton.addEventListener('click', () => {
+                currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
+                showFlashcard();
+            });
+            
+            function showPage(pageId) {
+                pages.forEach(page => {
+                    page.classList.remove('active');
+                });
+                const newPage = document.getElementById(pageId);
+                if (newPage) {
+                    newPage.classList.add('active');
+                } else {
+                    homePage.classList.add('active');
+                }
+
+                if (pageId === 'lernkarten') {
+                    showFlashcard();
+                }
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const pageId = button.dataset.page;
+                    
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    showPage(pageId);
+                });
+            });
+
+            // Set initial active button
+            const initialPage = 'lernkarten';
+            document.querySelector(`nav button[data-page='${initialPage}']`).classList.add('active');
+            showPage(initialPage);
+        });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js');
+        }
+    </script>
+
+</body>
+</html>
