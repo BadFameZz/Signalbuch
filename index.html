@@ -53,7 +53,8 @@
         main {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 0 20px 150px 20px; /* Padding bottom for nav bar */
+            padding: 0 20px;
+            padding-bottom: calc(env(safe-area-inset-bottom) + 180px); /* Mehr Padding für Buttons und Nav */
             -webkit-overflow-scrolling: touch;
         }
 
@@ -63,8 +64,9 @@
         .flashcard-scene {
             perspective: 1000px;
             width: 100%;
-            height: 400px; /* Zurück auf 400px geändert */
+            height: calc(100vh - 300px); /* Dynamische Höhe basierend auf Viewport */
             margin-bottom: 25px;
+            max-height: 500px; /* Maximale Höhe für größere Bildschirme */
         }
 
         .flashcard {
@@ -94,27 +96,32 @@
         }
 
         .card {
-            background: rgba(44, 44, 46, 0.6);
+            background: rgba(44, 44, 46, 0.4);
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 25px;
             margin-bottom: 25px;
             text-align: center;
             height: 100%;
             display: flex;
             flex-direction: column;
-            overflow-y: auto; /* Ermöglicht Scrollen bei Überlauf */
-            -webkit-overflow-scrolling: touch; /* Für besseres Scrolling auf iOS */
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .card h2 {
             margin-top: 0;
-            margin-bottom: 15px; /* Fügt etwas Abstand unter der Überschrift hinzu */
+            margin-bottom: 20px;
             color: var(--label-primary);
-            font-size: 1.5em;
-            flex-shrink: 0; /* Verhindert, dass die Überschrift schrumpft */
+            font-size: 2em;
+            font-weight: 600;
+            flex-shrink: 0;
+            width: 100%;
+            text-align: center;
         }
 
         /* Neuer CSS-Block für Bilder */
@@ -160,12 +167,13 @@
             right: 0;
             display: flex;
             justify-content: space-around;
-            background: rgba(28, 28, 30, 0.7);
+            background: rgba(28, 28, 30, 0.8);
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px) saturate(180%);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 10px 0;
-            padding-bottom: env(safe-area-inset-bottom); /* For iPhone X notch */
+            padding: 15px 0;
+            padding-bottom: calc(env(safe-area-inset-bottom) + 15px); /* Mehr Padding für bessere Touch-Targets */
+            z-index: 101; /* Über page-footer */
         }
 
         nav button {
@@ -215,13 +223,14 @@
 
         .page-footer {
             position: fixed;
-            bottom: 85px; /* Adjust this value to position above the main nav bar */
+            bottom: calc(env(safe-area-inset-bottom) + 80px); /* Berücksichtigt iPhone-Notch + Abstand zur Nav */
             left: 0;
             right: 0;
-            padding: 0 20px;
+            padding: 0 20px 15px 20px;
             display: flex;
             gap: 15px;
             z-index: 100;
+            background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
         }
 
         #loginOverlay {
@@ -386,10 +395,11 @@
             if (flashcard.classList.contains('is-flipped')) {
                 flashcard.classList.remove('is-flipped');
             }
-            let frontContent = `<h2>${cardData.term}</h2>`;
+            let frontContent = `<div class="card-content"><h2>${cardData.term}</h2>`;
             if (cardData.image) {
                 frontContent += `<img src="${cardData.image}" alt="${cardData.term}">`;
             }
+            frontContent += `</div>`;
             cardFrontContent.innerHTML = frontContent;
             cardBackContent.innerHTML = `<div class="card-content">${cardData.definition}</div>`;
         }
