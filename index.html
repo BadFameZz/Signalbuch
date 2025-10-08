@@ -151,6 +151,13 @@
             font-size: 2em;
             margin-bottom: 20px;
             color: var(--text);
+            word-wrap: break-word;
+            hyphens: auto;
+        }
+
+        .card h2.auto-size {
+            font-size: clamp(1.2em, 5vw, 2.5em);
+            line-height: 1.2;
         }
 
         .card h3 {
@@ -1207,13 +1214,32 @@
                         <p style="color: var(--text-secondary); font-style: italic; margin-top: 20px;">Karte antippen zum Umdrehen</p>
                     `;
                 } else {
-                    // Kein Bild - nur Text
-                    document.getElementById('cardTitle').textContent = current.term;
+                    // Kein Bild - nur Text mit dynamischer Schriftgröße
+                    const titleElement = document.getElementById('cardTitle');
+                    titleElement.textContent = current.term;
+                    titleElement.classList.add('auto-size');
+                    
+                    // Schriftgröße automatisch anpassen
+                    adjustFontSize(titleElement);
+                    
                     document.getElementById('cardContent').innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Karte antippen zum Umdrehen</p>';
                 }
             }
 
             updateProgressDots();
+        }
+
+        function adjustFontSize(element) {
+            const maxHeight = 200; // Maximale Höhe für den Titel
+            let fontSize = 2.5; // Start mit großer Schrift
+            
+            element.style.fontSize = fontSize + 'em';
+            
+            // Reduziere Schriftgröße, bis Text passt
+            while (element.scrollHeight > maxHeight && fontSize > 1) {
+                fontSize -= 0.1;
+                element.style.fontSize = fontSize + 'em';
+            }
         }
 
         function flipCard() {
