@@ -1110,29 +1110,32 @@
         document.addEventListener('touchend', handleEnd);
 
         function handleStart(e) {
-            isDragging = true;
             const point = e.touches ? e.touches[0] : e;
             startX = point.clientX;
             startY = point.clientY;
+            isDragging = false;
             card.style.transition = 'none';
         }
 
         function handleMove(e) {
-            if (!isDragging) return;
-            e.preventDefault();
-
             const point = e.touches ? e.touches[0] : e;
             const deltaX = point.clientX - startX;
             const deltaY = point.clientY - startY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+            // Nur als Drag markieren, wenn wirklich bewegt wurde (mehr als 10px)
+            if (distance > 10) {
+                isDragging = true;
+            }
+
+            if (!isDragging) return;
+            e.preventDefault();
 
             const rotation = deltaX * 0.1;
             card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
         }
 
         function handleEnd(e) {
-            if (!isDragging) return;
-            isDragging = false;
-
             const point = e.changedTouches ? e.changedTouches[0] : e;
             const deltaX = point.clientX - startX;
             const deltaY = point.clientY - startY;
@@ -1140,22 +1143,25 @@
 
             card.style.transition = 'transform 0.3s';
 
-            if (distance > 100) {
+            if (isDragging && distance > 100) {
                 // Swiped
                 if (deltaX > 0) {
                     previousCard();
                 } else {
                     nextCard();
                 }
-            } else if (distance < 10 && Math.abs(deltaY) < 10) {
-                // Clicked
+            } else if (!isDragging) {
+                // Clicked (kein Drag-Bewegung)
                 flipCard();
             } else {
-                // Reset
+                // Reset (zu kurzer Swipe)
                 card.style.transform = '';
             }
 
-            setTimeout(() => card.style.transform = '', 100);
+            setTimeout(() => {
+                card.style.transform = '';
+                isDragging = false;
+            }, 100);
         }
 
         function showCard() {
