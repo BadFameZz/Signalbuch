@@ -98,7 +98,7 @@
             overflow-y: auto;
             overflow-x: hidden;
             padding: 20px;
-            padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 110px);
         }
 
         .page {
@@ -520,8 +520,8 @@
             <span>Suche</span>
         </button>
     </nav>
-    <div style="text-align: center; padding: 10px; padding-bottom: max(env(safe-area-inset-bottom), 10px); background: var(--card-bg); color: var(--text-secondary); font-size: 0.75em; border-top: 1px solid var(--border);">
-        Version 1.2.0
+    <div style="position: fixed; bottom: 0; left: 0; right: 0; text-align: center; padding: 5px; padding-bottom: max(env(safe-area-inset-bottom), 5px); background: var(--bg); color: var(--text-secondary); font-size: 0.7em; z-index: 99;">
+        Version 1.2.1
     </div>
 
     <script>
@@ -1230,18 +1230,24 @@
         function nextCard() {
             currentIndex = (currentIndex + 1) % cards.length;
             isFlipped = false;
-            showCard();
-
-            card.style.transition = 'transform 0.3s';
-            card.style.transform = 'translateX(-600px) rotate(-30deg)';
+            
+            // Elegante Fade-Out Animation
+            card.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            
             setTimeout(() => {
+                showCard();
                 card.style.transition = 'none';
-                card.style.transform = 'translateX(600px) rotate(30deg)';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                
                 setTimeout(() => {
-                    card.style.transition = 'transform 0.3s';
-                    card.style.transform = '';
-                }, 50);
-            }, 300);
+                    card.style.transition = 'opacity 0.3s ease-in, transform 0.3s ease-in';
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1)';
+                }, 20);
+            }, 200);
 
             saveProgress();
         }
@@ -1249,18 +1255,24 @@
         function previousCard() {
             currentIndex = (currentIndex - 1 + cards.length) % cards.length;
             isFlipped = false;
-            showCard();
-
-            card.style.transition = 'transform 0.3s';
-            card.style.transform = 'translateX(600px) rotate(30deg)';
+            
+            // Elegante Fade-Out Animation
+            card.style.transition = 'opacity 0.2s ease-out, transform 0.2s ease-out';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            
             setTimeout(() => {
+                showCard();
                 card.style.transition = 'none';
-                card.style.transform = 'translateX(-600px) rotate(-30deg)';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.9)';
+                
                 setTimeout(() => {
-                    card.style.transition = 'transform 0.3s';
-                    card.style.transform = '';
-                }, 50);
-            }, 300);
+                    card.style.transition = 'opacity 0.3s ease-in, transform 0.3s ease-in';
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1)';
+                }, 20);
+            }, 200);
         }
 
         function handleReaction(type) {
