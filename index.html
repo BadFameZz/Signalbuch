@@ -1161,15 +1161,18 @@
 
         function showCard() {
             const current = cards[currentIndex];
+            const titleElement = document.getElementById('cardTitle');
 
             if (isFlipped) {
-                document.getElementById('cardTitle').textContent = '';
+                titleElement.textContent = '';
+                titleElement.classList.remove('auto-size');
                 document.getElementById('cardContent').innerHTML = current.definition;
             } else {
                 // Vorderseite: Zeige Bild(er) wenn vorhanden, sonst Text
                 if (current.images && current.images.length > 0) {
                     // Mehrere Bilder nebeneinander
-                    document.getElementById('cardTitle').textContent = '';
+                    titleElement.textContent = '';
+                    titleElement.classList.remove('auto-size');
                     let imagesHtml = '<div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; margin: 20px 0;">';
                     current.images.forEach(img => {
                         imagesHtml += `<img src="${img}" style="max-width: 40%; max-height: 250px; height: auto; border-radius: 10px;" alt="${current.term}">`;
@@ -1181,7 +1184,8 @@
                     `;
                 } else if (current.image) {
                     // Einzelnes Bild
-                    document.getElementById('cardTitle').textContent = '';
+                    titleElement.textContent = '';
+                    titleElement.classList.remove('auto-size');
                     // Weißer Hintergrund für Gelbes Mastschild
                     const bgStyle = current.image.includes('Gelbes_Mastschild') ? 'background: white; padding: 10px;' : '';
                     document.getElementById('cardContent').innerHTML = `
@@ -1190,12 +1194,12 @@
                     `;
                 } else {
                     // Kein Bild - nur Text mit dynamischer Schriftgröße
-                    const titleElement = document.getElementById('cardTitle');
                     titleElement.textContent = current.term;
                     titleElement.classList.add('auto-size');
+                    titleElement.style.fontSize = ''; // Reset font size
                     
                     // Schriftgröße automatisch anpassen
-                    adjustFontSize(titleElement);
+                    setTimeout(() => adjustFontSize(titleElement), 10);
                     
                     document.getElementById('cardContent').innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Karte antippen zum Umdrehen</p>';
                 }
