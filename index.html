@@ -520,6 +520,9 @@
             <span>Suche</span>
         </button>
     </nav>
+    <div style="text-align: center; padding: 10px; padding-bottom: max(env(safe-area-inset-bottom), 10px); background: var(--card-bg); color: var(--text-secondary); font-size: 0.75em; border-top: 1px solid var(--border);">
+        Version 1.2.0
+    </div>
 
     <script>
         // ==================== DATA ====================
@@ -1066,6 +1069,8 @@
         let startX = 0;
         let startY = 0;
         let isDragging = false;
+        let hasMoved = false;
+        let touchStartTime = 0;
         let quizQuestions = [];
         let quizIndex = 0;
         let quizScore = 0;
@@ -1113,54 +1118,62 @@
             const point = e.touches ? e.touches[0] : e;
             startX = point.clientX;
             startY = point.clientY;
-            isDragging = false;
+            isDragging = true;
+            hasMoved = false;
+            touchStartTime = Date.now();
             card.style.transition = 'none';
         }
 
         function handleMove(e) {
+            if (!isDragging) return;
+            
             const point = e.touches ? e.touches[0] : e;
             const deltaX = point.clientX - startX;
             const deltaY = point.clientY - startY;
             const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-            // Nur als Drag markieren, wenn wirklich bewegt wurde (mehr als 10px)
-            if (distance > 10) {
-                isDragging = true;
+            // Markiere als bewegt, wenn mehr als 15px
+            if (distance > 15) {
+                hasMoved = true;
+                e.preventDefault();
+                const rotation = deltaX * 0.1;
+                card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
             }
-
-            if (!isDragging) return;
-            e.preventDefault();
-
-            const rotation = deltaX * 0.1;
-            card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
         }
 
         function handleEnd(e) {
+            if (!isDragging) return;
+            
             const point = e.changedTouches ? e.changedTouches[0] : e;
             const deltaX = point.clientX - startX;
             const deltaY = point.clientY - startY;
             const distance = Math.abs(deltaX);
+            const touchDuration = Date.now() - touchStartTime;
 
             card.style.transition = 'transform 0.3s';
+            isDragging = false;
 
-            if (isDragging && distance > 100) {
-                // Swiped
+            // Wenn nicht bewegt wurde UND kurzer Touch (unter 300ms) -> Flip
+            if (!hasMoved && touchDuration < 300) {
+                card.style.transform = '';
+                flipCard();
+            }
+            // Wenn weit genug geswiped -> nächste/vorherige Karte
+            else if (hasMoved && distance > 100) {
                 if (deltaX > 0) {
                     previousCard();
                 } else {
                     nextCard();
                 }
-            } else if (!isDragging) {
-                // Clicked (kein Drag-Bewegung)
-                flipCard();
-            } else {
-                // Reset (zu kurzer Swipe)
+            }
+            // Sonst zurücksetzen
+            else {
                 card.style.transform = '';
             }
 
             setTimeout(() => {
                 card.style.transform = '';
-                isDragging = false;
+                hasMoved = false;
             }, 100);
         }
 
