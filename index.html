@@ -1150,11 +1150,11 @@
             const distance = Math.abs(deltaX);
             const touchDuration = Date.now() - touchStartTime;
 
-            card.style.transition = 'transform 0.1s';
+            card.style.transition = 'transform 0.01s';
             isDragging = false;
 
             // Wenn nicht bewegt wurde UND kurzer Touch (unter 100ms) -> Flip
-            if (!hasMoved && touchDuration < 100) {
+            if (!hasMoved && touchDuration < 10) {
                 card.style.transform = '';
                 flipCard();
             }
