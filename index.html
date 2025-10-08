@@ -199,6 +199,28 @@
             border-color: var(--primary);
         }
 
+        /* Progress Dots */
+        .progress-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--primary);
+            width: 24px;
+            border-radius: 4px;
+        }
+
         /* Quiz/Content Card */
         .content-card {
             background: var(--card-bg);
@@ -395,6 +417,8 @@
                         <div id="cardContent"></div>
                     </div>
                 </div>
+
+                <div class="progress-dots" id="progressDots"></div>
 
                 <div class="reactions">
                     <button class="reaction-btn" onclick="handleReaction('hard')">😓</button>
@@ -1062,6 +1086,7 @@
         // ==================== INIT ====================
         const card = document.getElementById('card');
         showCard();
+        updateProgressDots();
         loadProgress();
 
         // ==================== NAVIGATION ====================
@@ -1204,6 +1229,8 @@
                     document.getElementById('cardContent').innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Karte antippen zum Umdrehen</p>';
                 }
             }
+
+            updateProgressDots();
         }
 
         function adjustFontSize(element) {
@@ -1282,14 +1309,23 @@
             nextCard();
         }
 
+        function updateProgressDots() {
+            const container = document.getElementById('progressDots');
+            container.innerHTML = '';
+
+            cards.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'dot' + (i === currentIndex ? ' active' : '');
+                container.appendChild(dot);
+            });
+        }
+
         // ==================== QUIZ ====================
         function startQuiz() {
             isExamMode = false;
             quizQuestions = [...cards].sort(() => Math.random() - 0.5);
             quizIndex = 0;
             quizScore = 0;
-            renderQuizQuestion();
-        }
             renderQuizQuestion();
         }
 
