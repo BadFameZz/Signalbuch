@@ -1214,10 +1214,8 @@
                     titleElement.classList.remove('auto-size');
                     // Weißer Hintergrund für Gelbes Mastschild
                     const bgStyle = current.image.includes('Gelbes_Mastschild') ? 'background: white; padding: 10px;' : '';
-                    // Größere Darstellung für Hp_0
-                    const imageSize = current.image.includes('Hp_0') ? 'max-width: 100%; max-height: 400px;' : 'max-width: 90%; max-height: 300px;';
                     document.getElementById('cardContent').innerHTML = `
-                        <img src="${current.image}" style="${imageSize} height: auto; margin: 20px auto; display: block; border-radius: 10px; ${bgStyle}" alt="${current.term}">
+                        <img src="${current.image}" style="max-width: 90%; max-height: 300px; height: auto; margin: 20px auto; display: block; border-radius: 10px; ${bgStyle}" alt="${current.term}">
                         <p style="color: var(--text-secondary); font-style: italic; margin-top: 20px;">Karte antippen zum Umdrehen</p>
                     `;
                 } else {
